@@ -58,3 +58,6 @@ pleroma.iml
 # Editor temp files
 /*~
 /*#
+
+.postgres_data/
+.neo4j_data/

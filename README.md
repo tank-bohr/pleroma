@@ -55,3 +55,14 @@ If you are not developing Pleroma, it is better to use the OTP release, which co
 ## Community Channels
 * IRC: **#pleroma** and **#pleroma-dev** on libera.chat, webchat is available at <https://irc.pleroma.social>
 * Matrix: [#pleroma:libera.chat](https://matrix.to/#/#pleroma:libera.chat) and [#pleroma-dev:libera.chat](https://matrix.to/#/#pleroma-dev:libera.chat)
+
+## Postgres-Neo4j debezium demo
+
+- make start-postgres
+- make setup-postgres
+- make ecto-setup
+- make start-debezium
+- make register-connector
+- make run-consumer (or `docker-compose run --rm consumer iex -S mix` for debug)
+- make ecto-seeds
+- make neo4j

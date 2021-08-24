@@ -1,0 +1,15 @@
+{
+  "name": "main-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "pleroma",
+    "database.password": "pleroma",
+    "database.dbname" : "pleroma",
+    "database.server.name": "dbserver1",
+    "plugin.name": "pgoutput",
+    "table.include.list": "public.users,public.following_relationships",
+    "column.exclude.list": "public.users.password_hash"
+  }
+}

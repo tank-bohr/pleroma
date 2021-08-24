@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: pleroma
+      POSTGRES_PASSWORD: pleroma
+      POSTGRES_DB: pleroma
+    volumes:
+      - ".postgres_data:/var/lib/postgresql/data"
+
+  neo4j:
+    image: neo4j:3.5.22
+    environment:
+      - "NEO4J_AUTH=none"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ".neo4j_data:/data"
+
+  zk:
+    image: debezium/zookeeper:1.6
+
+  kafka:
+    image: debezium/kafka:1.6
+    environment:
+      - "ZOOKEEPER_CONNECT=zk:2181"
+    depends_on:
+      - zk
+
+  connect:
+    image: debezium/connect:1.6
+    ports:
+      - "8083:8083"
+    environment:
+      - "BOOTSTRAP_SERVERS=kafka:9092"
+      - "CONFIG_STORAGE_TOPIC=my_connect_configs"
+      - "OFFSET_STORAGE_TOPIC=my_connect_offsets"
+      - "STATUS_STORAGE_TOPIC=my_connect_statuses"
+    depends_on:
+      - postgres
+      - kafka
+
+  consumer:
+    build:
+      context: consumer
+      dockerfile: Dockerfile
+    volumes:
+      - "./consumer:/app"
+    command: "mix run --no-halt"
+    depends_on:
+      - connect
+      - neo4j
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - ".:/app"
+    command: "mix phx.server"

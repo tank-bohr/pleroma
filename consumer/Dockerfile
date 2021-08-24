@@ -1,0 +1,9 @@
+FROM hexpm/elixir:1.12.2-erlang-24.0.5-alpine-3.14.0
+
+RUN apk -U upgrade
+RUN apk add --no-cache build-base git vim curl file-dev netcat-openbsd
+
+RUN mix local.hex --force
+RUN mix local.rebar --force
+
+WORKDIR app
