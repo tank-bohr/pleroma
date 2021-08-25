@@ -51,7 +51,14 @@ defmodule Consumer.Debezium do
   end
 
   defp create_entity("users", attrs) do
-    Sips.query!(Sips.conn(), "MERGE (u:User {id: {id}, name: {name}, nickname: {nickname}})", attrs)
+    query = """
+      MERGE (u:User {id: {id}})
+      ON MATCH
+        SET
+          u.name = {name},
+          u.nickname = {nickname}
+    """
+    Sips.query!(Sips.conn(), query, attrs)
   end
 
   defp create_entity("following_relationships", attrs) do
@@ -60,12 +67,15 @@ defmodule Consumer.Debezium do
       MATCH (following:User {id: {following_id}})
       MERGE (follower)-[rel:FOLLOWS]->(following)
     """
-    %Bolt.Sips.Response{stats: stats} = Sips.query!(Sips.conn(), query, attrs)
-    if stats["relationships-created"] != 1 do
-      Logger.warn("Couldn't create relation")
-      %Bolt.Sips.Response{} = Sips.query!(Sips.conn(), """
-        CREATE (follower:User {id: {follower_id}})-[rel:FOLLOWS]->(following:User {id: {following_id}})
-      """, attrs)
+    case Sips.query!(Sips.conn(), query, attrs) do
+      %Sips.Response{stats: %{"relationships-created" => _}} ->
+        :ok
+
+      _ ->
+        Logger.warn("Couldn't create relation")
+        %Bolt.Sips.Response{} = Sips.query!(Sips.conn(), """
+          CREATE (follower:User {id: {follower_id}})-[rel:FOLLOWS]->(following:User {id: {following_id}})
+        """, attrs)
     end
   end
 end
