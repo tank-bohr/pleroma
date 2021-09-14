@@ -8,6 +8,7 @@ defmodule Pleroma.Web.CommonAPI do
   alias Pleroma.Formatter
   alias Pleroma.Object
   alias Pleroma.ThreadMute
+  alias Pleroma.HiveModeration
   alias Pleroma.User
   alias Pleroma.UserRelationship
   alias Pleroma.Web.ActivityPub.ActivityPub
@@ -396,8 +397,9 @@ defmodule Pleroma.Web.CommonAPI do
   end
 
   def post(user, %{status: _} = data) do
-    with {:ok, draft} <- ActivityDraft.create(user, data) do
-      ActivityPub.create(draft.changes, draft.preview?)
+    with {:ok, draft} <- ActivityDraft.create(user, data),
+         {:ok, moderation_data} <- HiveModeration.moderate_text(draft.content_html) do
+      ActivityPub.create(draft.changes, draft.preview?, moderation_data)
     end
   end
 
