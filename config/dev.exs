@@ -54,6 +54,10 @@ config :pleroma, Pleroma.Repo,
 
 config :pleroma, Pleroma.Web.ApiSpec.CastAndValidate, strict: true
 
+config :pleroma, :hive,
+  base_url: "https://api.thehive.ai/api/v2",
+  token: System.fetch_env!("PLEROMA_HIVE_TOKEN")
+
 # Reduce recompilation time
 # https://dashbit.co/blog/speeding-up-re-compilation-of-elixir-projects
 config :phoenix, :plug_init_mode, :runtime

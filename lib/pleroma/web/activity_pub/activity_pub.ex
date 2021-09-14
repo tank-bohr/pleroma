@@ -263,15 +263,17 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
     :noop
   end
 
-  @spec create(map(), boolean()) :: {:ok, Activity.t()} | {:error, any()}
-  def create(params, fake \\ false) do
-    with {:ok, result} <- Repo.transaction(fn -> do_create(params, fake) end) do
+  @spec create(map(), boolean(), map()) :: {:ok, Activity.t()} | {:error, any()}
+  def create(params, fake \\ false, moderation_data \\ %{}) do
+    with {:ok, result} <- Repo.transaction(fn -> do_create(params, fake, moderation_data) end) do
       result
     end
   end
 
-  defp do_create(%{to: to, actor: actor, context: context, object: object} = params, fake) do
+  defp do_create(params, fake, moderation_data) do
+    %{to: to, actor: actor, context: context, object: object} = params
     additional = params[:additional] || %{}
+    additional = Map.put(additional, "moderation", moderation_data)
     # only accept false as false value
     local = !(params[:local] == false)
     published = params[:published]
